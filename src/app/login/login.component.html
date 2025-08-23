@@ -1,0 +1,64 @@
+<div class="page">
+  <div class="bg"></div>
+
+  <main class="card" role="dialog" aria-labelledby="loginTitle">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">✔</div>
+      <h1 id="loginTitle">Countdown Todo App</h1>
+      <p class="subtitle">Login</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="login()" novalidate>
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="username"
+          autocomplete="username"
+          [class.invalid]="form.controls.username.touched && form.controls.username.invalid"
+          required
+        />
+        <small *ngIf="form.controls.username.touched && form.controls.username.hasError('required')">Required</small>
+        <small *ngIf="form.controls.username.touched && form.controls.username.hasError('minlength')">Min. 3 char</small>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="password">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            [class.invalid]="form.controls.password.touched && form.controls.password.invalid"
+            required
+          />
+          <button type="button" class="toggle" (click)="toggleShowPassword()" aria-label="Şifreyi göster/gizle">
+            {{ showPassword() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <small *ngIf="form.controls.password.touched && form.controls.password.hasError('required')">Required</small>
+        <small *ngIf="form.controls.password.touched && form.controls.password.hasError('minlength')">Min. 6 char.</small>
+      </div>
+
+      <div class="row">
+        <label class="remember">
+          <input type="checkbox" formControlName="remember" />
+          Beni hatırla
+        </label>
+      </div>
+
+      <button class="submit" type="submit" [disabled]="form.invalid || loading()">
+        <span *ngIf="!loading()">Login</span>
+        <span *ngIf="loading()" class="spinner" aria-hidden="true"></span>
+      </button>
+
+      <p class="error" *ngIf="errorMsg()">{{ errorMsg() }}</p>
+    </form>
+
+
+  </main>
+</div>
