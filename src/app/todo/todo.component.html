@@ -1,0 +1,22 @@
+<div class="container">
+  <h1>🧊 Countdown Todo</h1>
+
+  <div class="todo-form">
+    <input
+      [(ngModel)]="newTitle"
+      (keyup.enter)="addTodo()"
+      placeholder="What's up!?"
+    />
+    <button (click)="addTodo()">Add</button>
+  </div>
+
+  <div class="todo-list">
+    @for (todo of todos; track todo.id) {
+      <div class="todo-item" [style.borderColor]="getTodoColor(todo)">
+        <div class="title">{{ todo.title }}</div>
+        <div class="date">{{ todo.createdAt }}</div>
+        <button class="delete-btn" (click)="deleteTodo(todo.id!)">🗑️</button>
+      </div>
+    }
+  </div>
+</div>
