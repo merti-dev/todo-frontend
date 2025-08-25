@@ -1,21 +1,20 @@
-import { Component } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { QuillModule } from 'ngx-quill';
-import { Router } from '@angular/router';
-import { BlogService } from '../services/blog.service';
-import {BlogPost} from '../models/blog.model';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
-  standalone: true,
   selector: 'app-editor',
-  imports: [ReactiveFormsModule, QuillModule],
+  standalone: true,
+  imports: [ReactiveFormsModule, QuillModule, CommonModule],
   template: `
     <form [formGroup]="form" (ngSubmit)="save()" class="editor-form">
-      <input
-        formControlName="title"
-        placeholder="Title"
-        class="title-input"
-      />
+      <select id="todoSelect" formControlName="todoId" (change)="loadContent()">
+        @for (t of todos(); track t.id) {
+          <option [value]="t.id">{{ t.title }}</option>
+        }
+      </select>
 
       <quill-editor
         formControlName="contentHtml"
@@ -24,58 +23,63 @@ import {BlogPost} from '../models/blog.model';
         [styles]="{height:'300px'}">
       </quill-editor>
 
-      <button type="submit" [disabled]="form.invalid" class="save-btn">
-        Kaydet
-      </button>
+      <button type="submit" [disabled]="form.invalid">Save</button>
     </form>
   `,
   styles: [`
     .editor-form { display: flex; flex-direction: column; gap: 1rem; }
-    .title-input { padding: 0.5rem; font-size: 1.2rem; }
-    .save-btn { padding: 0.5rem 1rem; font-size: 1rem; }
+    select { padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
   `]
 })
-export class EditorComponent {
-  form;
+export class EditorComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private http = inject(HttpClient);
+
+  // Angular 20 signals
+  todos = signal<any[]>([]);
+
+  form = this.fb.group({
+    todoId: ['', Validators.required],
+    contentHtml: ['']
+  });
+
   modules = {
     toolbar: [
-      ['bold','italic','underline','code','code-block','blockquote'],
+      ['bold','italic','underline','code','blockquote'],
       [{ header:[1,2,3,false]}],
       [{ list:'ordered' }, { list:'bullet' }],
       ['link','clean']
-    ],
-    clipboard: { matchVisual: false }
+    ]
   };
 
-  constructor(
-    private fb: FormBuilder,
-    private blogService: BlogService,
-    private router: Router
-  ) {
-    this.form = this.fb.group({
-      title: ['', Validators.required],
-      contentHtml: ['']
+  ngOnInit() {
+    this.http.get<any[]>('/api/todos').subscribe(res => {
+      this.todos.set(res);
     });
+  }
+
+  loadContent() {
+    const id = this.form.value.todoId;
+    const selected = this.todos().find(t => t.id == id);
+    if (selected) {
+      this.form.patchValue({ contentHtml: selected.content || '' });
+    }
   }
 
   save() {
-    if (this.form.invalid) return;
+    const { todoId, contentHtml } = this.form.getRawValue();
+    if (!todoId) return;
 
-    const raw = this.form.getRawValue();
+    const selected = this.todos().find(t => t.id == todoId);
+    if (!selected) return;
 
-    const newPost: BlogPost = {
-      title: raw.title ?? '',
-      content: raw.contentHtml ?? '',
-      createdAt: new Date().toISOString()
-    };
-
-    this.blogService.add(newPost).subscribe({
-      next: () => {
-        this.form.reset();
-        alert('Post added!');
-      },
-      error: (err) => console.error('Save error', err)
+    this.http.put(`/api/todos/${todoId}`, {
+      title: selected.title,
+      content: contentHtml,
+      completed: selected.completed
+    }).subscribe(() => {
+      alert('Content saved!');
     });
   }
-
 }

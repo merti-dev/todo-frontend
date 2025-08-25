@@ -1,0 +1,12 @@
+<div class="blog-container">
+  <h1>📝 Blog</h1>
+
+  @for (todo of todos; track todo.id) {
+    <div class="blog-post">
+      <h2>{{ todo.title }}</h2>
+      <small>{{ todo.createdAt | date }}</small>
+      <div class="content" [innerHTML]="todo.content"></div>
+    </div>
+  }
+
+</div>

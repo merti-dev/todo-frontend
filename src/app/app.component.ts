@@ -1,62 +1,78 @@
-import { Component, inject } from '@angular/core';
-import { TodoService } from './todo.service';
-import { Todo } from './todo.model';
-import {formatDate, NgForOf} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import { Component } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
-  imports: [
-    FormsModule,
-    NgForOf
-  ]
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  private todoService = inject(TodoService);
+  onLoginRoute = false;
 
-  todos: Todo[] = [];
-  newTitle: string = '';
+  todos: any[] = [];
+  newTitle = '';
+  newContent=''
 
-  ngOnInit() {
-    this.loadTodos();
+  constructor(private router: Router, private http: HttpClient) {
+    const token = localStorage.getItem('token');
+    if (!token && !this.isLoginUrl(window.location.pathname)) {
+      this.router.navigate(['/login']);
+    }
+
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: any) => {
+        this.onLoginRoute = this.isLoginUrl(e.urlAfterRedirects || e.url);
+        if (!this.onLoginRoute) {
+          this.loadTodos();
+        }
+      });
+  }
+
+  private isLoginUrl(url: string): boolean {
+    return url.startsWith('/login');
   }
 
   loadTodos() {
-    this.todoService.getTodos().subscribe((data) => {
-      this.todos = data;
-    });
+    this.http.get<any[]>('/api/todos').subscribe(t => this.todos = t);
   }
 
   addTodo() {
-    if (!this.newTitle.trim()) return;
+    if (!this.newTitle.trim() && !this.newContent.trim()) return;
 
-    const newTodo: Todo = {
+    this.http.post('/api/todos', {
       title: this.newTitle,
-      completed: false,
-      createdAt: formatDate(new Date(), 'yyyy-MM-dd', 'en-US'),
-    };
-
-    this.todoService.addTodo(newTodo).subscribe((todo) => {
-      this.todos.push(todo);
+      content: this.newContent
+    }).subscribe(() => {
       this.newTitle = '';
+      this.newContent = '';
+      this.loadTodos();
     });
   }
+
 
   deleteTodo(id: number) {
-    this.todoService.deleteTodo(id).subscribe(() => {
-      this.todos = this.todos.filter((t) => t.id !== id);
+    this.http.delete(`/api/todos/${id}`).subscribe(() => {
+      this.loadTodos();
     });
   }
 
-  getTodoColor(todo: Todo): string {
+  getTodoColor(todo: any) {
     const createdDate = new Date(todo.createdAt);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays >= 3) return 'red';
-    if (diffDays === 2) return 'yellow';
-    return 'green';
+    const days = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (days === 0) return 'green';
+    if (days === 1) return 'yellow';
+    return 'red';
   }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token') || !!sessionStorage.getItem('token');
+  }
+
 }

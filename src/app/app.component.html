@@ -1,24 +1,7 @@
-<div class="container">
-  <h1>🧊 Countdown Todo</h1>
+<nav *ngIf="isLoggedIn() && !onLoginRoute">
+  <a routerLink="/todo">Todo</a> |
+  <a routerLink="/editor">Editor</a> |
+  <a routerLink="/blog">Blog</a>
+</nav>
 
-  <div class="todo-form">
-    <input
-      [(ngModel)]="newTitle"
-      (keyup.enter)="addTodo()"
-      placeholder="What's up!?"
-    />
-    <button (click)="addTodo()">Add</button>
-  </div>
-
-  <div class="todo-list">
-    <div
-      class="todo-item"
-      *ngFor="let todo of todos"
-      [style.borderColor]="getTodoColor(todo)"
-    >
-      <div class="title">{{ todo.title }}</div>
-      <div class="date">{{ todo.createdAt }}</div>
-      <button class="delete-btn" (click)="deleteTodo(todo.id!)">🗑️</button>
-    </div>
-  </div>
-</div>
+<router-outlet></router-outlet>

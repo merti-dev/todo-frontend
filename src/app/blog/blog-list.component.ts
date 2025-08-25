@@ -1,36 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { BlogPost } from '../models/blog.model';
-import { BlogService } from '../services/blog.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="blog-container">
-      <h1>📝 Blog</h1>
-      <button (click)="goToEditor()">+ Yeni Yazı</button>
-
-      <div *ngFor="let post of posts" class="blog-post">
-        <h2>{{ post.title }}</h2>
-        <small>{{ post.createdAt }}</small>
-        <div [innerHTML]="post.content"></div>
-      </div>
-    </div>
-  `
+  templateUrl: './blog-list.component.html',
+  styleUrls: ['./blog-list.component.scss']
 })
 export class BlogListComponent implements OnInit {
-  posts: BlogPost[] = [];
+  todos: any[] = [];
 
-  constructor(private router: Router, private blogService: BlogService) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.posts = this.blogService.getAll();
-  }
-
-  goToEditor() {
-    this.router.navigate(['/editor']);
+    this.http.get<any[]>('/api/todos').subscribe(t => this.todos = t);
   }
 }

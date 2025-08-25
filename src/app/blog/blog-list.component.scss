@@ -1,0 +1,29 @@
+.blog-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.blog-post {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+
+  h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    color: #1e293b;
+  }
+
+  small {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+
+  .content {
+    margin-top: 0.8rem;
+    line-height: 1.6;
+  }
+}
