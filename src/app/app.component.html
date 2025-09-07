@@ -1,7 +1,2 @@
-<nav *ngIf="isLoggedIn() && !onLoginRoute">
-  <a routerLink="/todo">Todo</a> |
-  <a routerLink="/editor">Editor</a> |
-  <a routerLink="/blog">Blog</a>
-</nav>
-
+<app-nav [show]="isLoggedIn()"></app-nav>
 <router-outlet></router-outlet>
