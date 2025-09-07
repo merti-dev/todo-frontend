@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import {RouterLink, RouterOutlet} from '@angular/router';
 
 @Component({
   selector: 'app-todo',
@@ -11,39 +11,58 @@ import {RouterLink, RouterOutlet} from '@angular/router';
   templateUrl: './todo.component.html',
   styleUrls: ['./todo.component.scss']
 })
-export class TodoComponent implements OnInit {
-  todos: any[] = [];
+export class TodoComponent {
+  todos:any[] = [];
   newTitle = '';
+  newContent = '';
+  detailsOpen = false;
 
-  constructor(private http: HttpClient) {}
+  openId:number|null = null;
 
-  ngOnInit(): void {
-    this.loadTodos();
-  }
+  // edit state
+  editId:number|null = null;
+  editTitle = '';
+  editContent = '';
 
-  loadTodos() {
+  constructor(private http:HttpClient) { this.loadTodos(); }
+
+  toggleDetails(){ this.detailsOpen = !this.detailsOpen; }
+
+  loadTodos(){
     this.http.get<any[]>('/api/todos').subscribe(t => this.todos = t);
   }
 
-  addTodo() {
-    if (!this.newTitle.trim()) return;
-    this.http.post('/api/todos', { title: this.newTitle }).subscribe(() => {
-      this.newTitle = '';
+  addTodo(){
+    const title = this.newTitle.trim();
+    if (!title) return;
+    const body:any = { title };
+    if (this.newContent.trim()) body.content = this.newContent;
+    this.http.post('/api/todos', body).subscribe(() => {
+      this.newTitle = ''; this.newContent = ''; this.detailsOpen = false;
       this.loadTodos();
     });
   }
 
-  deleteTodo(id: number) {
-    this.http.delete(`/api/todos/${id}`).subscribe(() => {
-      this.loadTodos();
-    });
+  deleteTodo(id:number){
+    this.http.delete(`/api/todos/${id}`).subscribe(() => this.loadTodos());
   }
 
-  getTodoColor(todo: any) {
-    const createdDate = new Date(todo.createdAt);
-    const days = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-    if (days === 0) return 'green';
-    if (days === 1) return 'yellow';
-    return 'red';
+  toggleOpen(id:number){ this.openId = this.openId === id ? null : id; }
+
+  startEdit(todo:any){
+    this.openId = todo.id;
+    this.editId = todo.id;
+    this.editTitle = todo.title;
+    this.editContent = todo.content || '';
+  }
+
+  cancelEdit(){ this.editId = null; this.editTitle = ''; this.editContent = ''; }
+
+  saveEdit(id:number){
+    const body = { title: this.editTitle.trim(), content: this.editContent };
+    this.http.put(`/api/todos/${id}`, body).subscribe(() => {
+      this.cancelEdit();
+      this.loadTodos();
+    });
   }
 }
