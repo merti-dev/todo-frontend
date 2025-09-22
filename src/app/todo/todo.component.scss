@@ -9,7 +9,18 @@
 .btn{padding:10px 12px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;cursor:pointer}
 .btn.primary{background:linear-gradient(135deg,#6366f1,#3b82f6);color:#fff;border:0}
 .btn:hover{filter:brightness(.98)}
-.list{display:grid;gap:12px}
+.list{display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-overflow: ellipsis
+;gap:12px}
+.titleDiv{
+  overflow: clip;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  scrollbar-width: none;
+  width: 50%;
+}
 .card{border:1px solid #e2e8f0;border-radius:16px;padding:14px 14px 10px;background:#fff;transition:box-shadow .2s,border-color .2s}
 .card:hover{box-shadow:0 10px 18px rgba(15,23,42,.06)}
 .card.open{border-color:#a5b4fc}

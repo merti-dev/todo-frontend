@@ -29,12 +29,21 @@
     @for (todo of todos; track todo.id) {
       <article class="card" [class.open]="openId === todo.id">
         <div class="row">
-          <a class="title" [routerLink]="['/blog', todo.id]">{{ todo.title }}</a>
+          <div class="titleDiv">
+            <a class="title" [routerLink]="['/blog', todo.id]">{{ todo.title }}</a>
+          </div>
 
           <div class="meta">
             <time>{{ todo.createdAt }} 00:00</time>
             <button class="icon" title="Edit" (click)="startEdit(todo)">✏️</button>
             <button class="icon" title="Delete" (click)="deleteTodo(todo.id)">🗑️</button>
+            @if (!todo.completed) {
+              <button class="icon" title="Completed" (click)="completeToggle(todo.id)">🧐</button>
+            } @else {
+              <button class="icon" title="Completed" (click)="completeToggle(todo.id)">✅</button>
+
+            }
+
             <button class="icon expander" (click)="toggleOpen(todo.id)"
                     [attr.aria-expanded]="openId===todo.id">▾</button>
           </div>

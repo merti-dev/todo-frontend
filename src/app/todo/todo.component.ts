@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -24,7 +24,11 @@ export class TodoComponent {
   editTitle = '';
   editContent = '';
 
-  constructor(private http:HttpClient) { this.loadTodos(); }
+  constructor(private http:HttpClient) { this.loadTodos();  }
+
+  public completeToggle(id:number){
+    this.http.patch(`/api/todos/${id}`, {}).subscribe(() => this.loadTodos());
+  }
 
   toggleDetails(){ this.detailsOpen = !this.detailsOpen; }
 
